@@ -1,0 +1,97 @@
+package org.casper.database;
+
+import org.casper.query.ListQuery;
+import org.casper.query.QueryBuilder;
+import org.casper.query.QueryPart;
+import org.casper.repository.CasperRepository;
+
+import java.util.*;
+
+public class CasperDatabase {
+    private Map<String, CasperCollection<?>> database;
+
+    public CasperDatabase() {
+        database = new HashMap<>();
+    }
+
+    public <T> void createCollection(String name) {
+        if (!database.containsKey(name))
+            database.put(name, new CasperCollection<T>());
+    }
+
+    public CasperCollection<?> getCollection(String name) {
+        return database.get(name);
+    }
+
+    public void dropCollection(String name) {
+        database.remove(name);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T save(String repository, T t) {
+        ((CasperCollection<T>)database.get(repository)).add(t);
+        return t;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T remove(String repository, T t) {
+        ((CasperCollection<T>)database.get(repository)).remove(t);
+        return t;
+    }
+
+    public <T> T delete(String repository, T t) {
+        return remove(repository, t);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> findAll(String repository) {
+        return ((CasperCollection<T>)database.get(repository)).toList();
+    }
+
+    public <T> T findOne(String repository, T id) {
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> find(final QueryBuilder qb) {
+
+        ListQuery q = ListQuery.from(database.get(qb.getRepository()).toList());
+
+        for (QueryPart p : qb) {
+            switch (p.getCommand()) {
+                case EQ_FIELD:
+                    q.eq(p.getField(), p.getValue());
+                    break;
+                case LIKE_FIELD:
+                    q.like(p.getField(), (String) p.getValue());
+                    break;
+                case AND:
+                    q.and();
+                    break;
+                case OR:
+                    q.or();
+                    break;
+                case NOT:
+                    q.not();
+                    break;
+                case LIMIT:
+                    q.limit((Integer) p.getValue());
+            }
+        }
+
+        return q.execute();
+    }
+
+    public <T> T findOne(QueryBuilder qb) {
+        qb.add(QueryPart.Command.LIMIT, 1);
+        List<T> r = find(qb);
+        return r.size() > 0 ? r.get(0) : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public int count(String repository) {
+        return database.get(repository).count();
+    }
+
+
+}
