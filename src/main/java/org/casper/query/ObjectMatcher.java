@@ -3,7 +3,6 @@ package org.casper.query;
 import org.casper.exception.CasperException;
 import org.casper.utils.CasperUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 
@@ -85,7 +84,8 @@ public class ObjectMatcher<T> {
     public ObjectMatcher<T> like(String field, String value) throws CasperException {
 
         value = value.replace("\\%", "$$__PERCENT__$$");
-        value = value.replace("%", "$$__WILDCARD__$$%");
+        value = value.replace("%", "%$$__WILDCARD__$$%");
+
         String[] parts = value.split("%");
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
@@ -101,7 +101,7 @@ public class ObjectMatcher<T> {
             }
         }
 
-        return test(field, value, CasperUtils.Mode.Regex);
+        return test(field, sb.toString(), CasperUtils.Mode.Regex);
     }
 
     public ObjectMatcher<T> like(String value) throws CasperException {

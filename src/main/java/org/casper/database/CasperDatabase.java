@@ -1,11 +1,13 @@
 package org.casper.database;
 
+import org.casper.exception.CasperException;
 import org.casper.query.ListQuery;
 import org.casper.query.QueryBuilder;
 import org.casper.query.QueryPart;
-import org.casper.repository.CasperRepository;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CasperDatabase {
     private Map<String, CasperCollection<?>> database;
@@ -53,7 +55,7 @@ public class CasperDatabase {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> List<T> find(final QueryBuilder qb) {
+    public <T> List<T> find(final QueryBuilder qb) throws CasperException {
 
         ListQuery q = ListQuery.from(database.get(qb.getRepository()).toList());
 
@@ -82,7 +84,7 @@ public class CasperDatabase {
         return q.execute();
     }
 
-    public <T> T findOne(QueryBuilder qb) {
+    public <T> T findOne(QueryBuilder qb) throws CasperException {
         qb.add(QueryPart.Command.LIMIT, 1);
         List<T> r = find(qb);
         return r.size() > 0 ? r.get(0) : null;

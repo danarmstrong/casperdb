@@ -1,5 +1,7 @@
 package org.casper.query;
 
+import org.casper.exception.CasperException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,7 +93,7 @@ public class ListQuery<T extends Collection<?>> {
     }
 
     @SuppressWarnings("unchecked")
-    public <X> List<X> execute() {
+    public <X> List<X> execute() throws CasperException {
         List<X> results = new ArrayList<>();
 
         for (X x : (Collection<X>) this.source) {
@@ -104,7 +106,7 @@ public class ListQuery<T extends Collection<?>> {
         return results;
     }
 
-    private <X> ObjectMatcher<X> buildQuery(X x) {
+    private <X> ObjectMatcher<X> buildQuery(X x) throws CasperException {
         ObjectMatcher<X> q = ObjectMatcher.from(x);
         for (QueryPart part : query) {
             switch (part.getCommand()) {
