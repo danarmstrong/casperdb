@@ -1,5 +1,8 @@
 package org.casper.query;
 
+import org.casper.exception.CasperException;
+import org.casper.utils.CasperUtils;
+
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -36,173 +39,141 @@ public class ObjectMatcher<T> {
         return match;
     }
 
-    public ObjectMatcher<T> eq(String field, Object value) {
-
+    private ObjectMatcher<T> test(String field, Object value, CasperUtils.Mode mode)
+        throws CasperException {
         if (skipNext) {
             skipNext = false;
             negate = false;
             return this;
         }
 
-        try {
-            Object o = getFieldValue(field);
-            this.match = o.getClass().equals(value.getClass()) && (negate != o.equals(value));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            this.match = false;
+        int result = CasperUtils.compare(source, field, value, mode);
+
+        if (mode == CasperUtils.Mode.LessThan) {
+            this.match = negate != (result < 0);
+        } else if (mode == CasperUtils.Mode.GreaterThan) {
+            this.match = negate != (result > 0);
+        } else if (mode == CasperUtils.Mode.LessThanEqual) {
+            this.match = negate != (result <= 0);
+        } else if (mode == CasperUtils.Mode.GreaterThanEqual) {
+            this.match = negate != (result >= 0);
+        } else {
+            this.match = negate != (result == 0);
         }
 
         negate = false;
         return this;
     }
 
-    public ObjectMatcher<T> eq(Object value) {
+    public ObjectMatcher<T> eq(String field, Object value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.Exact);
+    }
+
+    public ObjectMatcher<T> eq(Object value) throws CasperException {
         return eq(this.field, value);
     }
 
-    public ObjectMatcher<T> neq(String field, Object value) {
+    public ObjectMatcher<T> neq(String field, Object value) throws CasperException {
         negate = true;
         return eq(field, value);
     }
 
-    public ObjectMatcher<T> neq(Object value) {
+    public ObjectMatcher<T> neq(Object value) throws CasperException {
         return neq(field, value);
     }
 
-    public ObjectMatcher<T> like(String field, String value) {
-        if (skipNext) {
-            skipNext = false;
-            negate = false;
-            return this;
+    public ObjectMatcher<T> like(String field, String value) throws CasperException {
+
+        value = value.replace("\\%", "$$__PERCENT__$$");
+        value = value.replace("%", "$$__WILDCARD__$$%");
+        String[] parts = value.split("%");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            switch (part) {
+                case "$$__WILDCARD__$$":
+                    sb.append("(.*)");
+                    break;
+                case "$$__PERCENT__$$":
+                    sb.append("%");
+                    break;
+                default:
+                    sb.append(part);
+            }
         }
 
-        try {
-            Object o = getFieldValue(field);
-            if (!(o instanceof String)) {
-                match = false;
-                negate = false;
-                return this;
-            }
-
-            String s = (String)o;
-            value = value.replace("\\%", "$$__PERCENT__$$");
-            value = value.replace("%", "$$__WILDCARD__$$%");
-            String[] parts = value.split("%");
-            StringBuilder sb = new StringBuilder();
-            for (String part : parts) {
-                switch (part) {
-                    case "$$__WILDCARD__$$":
-                        sb.append("(.*)");
-                        break;
-                    case "$$__PERCENT__$$":
-                        sb.append("%");
-                        break;
-                    default:
-                        sb.append(part);
-                }
-            }
-
-            System.out.println("Regex is: " + sb.toString());
-            match = (negate != s.matches(sb.toString()));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            match = false;
-        }
-
-        negate = false;
-        return this;
+        return test(field, value, CasperUtils.Mode.Regex);
     }
 
-    public ObjectMatcher<T> like(String value) {
+    public ObjectMatcher<T> like(String value) throws CasperException {
         return like(field, value);
     }
 
-    private int compare(double a, double b) {
-        return a < b ? -1 : a > b ? 1 : 0;
+
+    public ObjectMatcher<T> lt(String field, Number value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.LessThan);
     }
 
-    private ObjectMatcher<T> compare(String field, Number value, boolean lt) {
-        if (skipNext) {
-            skipNext = false;
-            negate = false;
-            return this;
-        }
-
-        try {
-            Object o = getFieldValue(field);
-            if (!(o instanceof Number)) {
-                match = false;
-                negate = false;
-                return this;
-            }
-
-            Number v = (Number)o;
-
-            int c = compare(v.doubleValue(), value.doubleValue());
-
-            match = (negate != (lt ? c < 0 : c > 0));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            match = false;
-        }
-
-        negate = false;
-        return this;
-    }
-
-    public ObjectMatcher<T> lt(String field, Number value) {
-        return compare(field, value, true);
-    }
-
-    public ObjectMatcher<T> lt(Number value) {
+    public ObjectMatcher<T> lt(Number value) throws CasperException {
         return lt(field, value);
     }
 
-    public ObjectMatcher<T> gt(String field, Number value) {
-        return compare(field, value, false);
+    public ObjectMatcher<T> gt(String field, Number value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.GreaterThan);
     }
 
-    public ObjectMatcher<T> gt(Number value) {
+    public ObjectMatcher<T> gt(Number value) throws CasperException {
         return gt(field, value);
     }
 
-    public ObjectMatcher<T> in(String field, Object[] value) {
+    public ObjectMatcher<T> in(String field, Object[] value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.Exact);
+    }
+
+    public ObjectMatcher<T> in(Object[] value) throws CasperException {
+        return in(field, value);
+    }
+
+    public ObjectMatcher<T> in(String field, List<?> value) throws CasperException {
+        return in(field, value.toArray());
+    }
+
+    public ObjectMatcher<T> in(List<?> value) throws CasperException {
+        return in(field, value);
+    }
+
+    public ObjectMatcher<T> between(String field, Number start, Number end) throws CasperException {
         if (skipNext) {
             skipNext = false;
             negate = false;
             return this;
         }
 
-        try {
-            Object o = getFieldValue(field);
-            for (Object a : value) {
-                this.match = o.getClass().equals(value.getClass()) && (negate != o.equals(value));
-                if (match)
-                    break;
-            }
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            this.match = false;
+        Double s, e;
+
+        if (start.doubleValue() > end.doubleValue()) {
+            s = end.doubleValue();
+            e = start.doubleValue();
+        } else if (start.doubleValue() < end.doubleValue()) {
+            s = start.doubleValue();
+            e = end.doubleValue();
+        } else {
+            return test(field, start, CasperUtils.Mode.Exact);
         }
 
+        for (Double i = s; i <= e; ++i) {
+            if (CasperUtils.compare(source, field, i) == 0) {
+                this.match = !negate;
+                negate = false;
+                return this;
+            }
+        }
+
+        this.match = negate;
         negate = false;
         return this;
     }
 
-    public ObjectMatcher<T> in(Object[] value) {
-        return in(field, value);
-    }
-
-    public ObjectMatcher<T> in(String field, List<?> value) {
-        return in(field, value.toArray());
-    }
-
-    public ObjectMatcher<T> in(List<?> value) {
-        return in(field, value);
-    }
-
-    public ObjectMatcher<T> between(String field, Number start, Number end) {
-
-        return this;
-    }
-
-    public ObjectMatcher<T> between(Number start, Number end) {
+    public ObjectMatcher<T> between(Number start, Number end) throws CasperException {
         return between(field, start, end);
     }
 
@@ -239,11 +210,4 @@ public class ObjectMatcher<T> {
         this.field = field;
         return or();
     }
-
-    private Object getFieldValue(String field) throws NoSuchFieldException, IllegalAccessException {
-        Field f = sourceClass.getDeclaredField(field);
-        f.setAccessible(true);
-        return f.get(source);
-    }
-
 }
