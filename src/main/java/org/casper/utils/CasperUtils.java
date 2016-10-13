@@ -9,10 +9,12 @@ public class CasperUtils {
     public static <T> int compare(T t, String field, Object value, Mode mode) throws CasperException {
         Object o = getFieldValue(t, field);
 
-        if (!o.getClass().equals(value.getClass()))
+        if (!o.getClass().equals(value.getClass())
+                && mode != Mode.In && mode != Mode.Between) {
             throw new CasperException("Field and value type mismatch");
+        }
 
-        if (o instanceof Number) {
+        if (o instanceof Number && !value.getClass().isArray()) {
             Double fieldValue = ((Number) o).doubleValue();
             Double targetValue = ((Number) value).doubleValue();
 
@@ -54,6 +56,7 @@ public class CasperUtils {
     public enum Mode {
         Exact, IgnoreCase, Regex,
         LessThan, GreaterThan,
-        LessThanEqual, GreaterThanEqual
+        LessThanEqual, GreaterThanEqual,
+        In, Between
     }
 }

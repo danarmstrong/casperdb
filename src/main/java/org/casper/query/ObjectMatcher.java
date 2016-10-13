@@ -126,7 +126,7 @@ public class ObjectMatcher<T> {
     }
 
     public ObjectMatcher<T> in(String field, Object[] value) throws CasperException {
-        return test(field, value, CasperUtils.Mode.Exact);
+        return test(field, value, CasperUtils.Mode.In);
     }
 
     public ObjectMatcher<T> in(Object[] value) throws CasperException {
@@ -161,7 +161,7 @@ public class ObjectMatcher<T> {
         }
 
         for (Double i = s; i <= e; ++i) {
-            if (CasperUtils.compare(source, field, i) == 0) {
+            if (CasperUtils.compare(source, field, i, CasperUtils.Mode.Between) == 0) {
                 this.match = !negate;
                 negate = false;
                 return this;
