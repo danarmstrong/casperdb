@@ -34,6 +34,10 @@ public class ObjectMatcher<T> {
         return sourceClass;
     }
 
+    public String getField() {
+        return field;
+    }
+
     public boolean isMatch() {
         return match;
     }

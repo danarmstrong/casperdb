@@ -327,11 +327,26 @@ public class ObjectMatcherTest {
 
     @Test
     public void where() throws Exception {
+        assertNull(matcher.getField());
+        matcher.where("age");
+        assertEquals(matcher.getField(), "age");
+        matcher.eq(30);
+        assertEquals(matcher.getField(), "age");
 
+        matcher.where("id");
+        assertEquals(matcher.getField(), "id");
     }
 
     @Test
     public void where1() throws Exception {
+        assertNull(matcher.getField());
+        matcher.where();
+        assertNull(matcher.getField());
+
+        matcher.where("age");
+        assertEquals(matcher.getField(), "age");
+        matcher.where();
+        assertEquals(matcher.getField(), "age");
 
     }
 
