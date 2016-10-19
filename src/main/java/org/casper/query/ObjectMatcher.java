@@ -6,6 +6,41 @@ import org.casper.utils.CasperUtils;
 import java.util.List;
 
 
+/**
+ * Allows and object to be matched against a SQL-style query
+ *
+ * -- ex: Matching an object using preferred syntax
+ * <pre>
+ * {@code
+ *      if (ObjectMatcher.match(o).where("name").eq("Bob").and("age").not().eq(25).isMatch())
+ *          // Do something based on matching object
+ * }
+ * </pre>
+ *
+ * -- ex: Matching an object using alternative syntax
+ * <pre>
+ * {@code
+ *      if (ObjectMatcher.match(o).eq("name", "Bob").and().ne("age", 25).isMatch())
+ *          // Do something based on matching object
+ * }
+ * </pre>
+ *
+ * -- ex: Building an ObjectMatcher
+ * <pre>
+ * {@code
+ *      ObjectMatcher<MyObject> om = ObjectMatcher.match(o);
+ *      o.where("name").eq("Bob");
+ *      o.and("age").not().eq(25);
+ *
+ *      if (o.isMatch())
+ *          // Do something based on matching object
+ * }
+ * </pre>
+ *
+ * @author Dan Armstrong
+ * @since 1.0
+ * @param <T>
+ */
 public class ObjectMatcher<T> {
     private boolean match;
     private boolean skipNext;
