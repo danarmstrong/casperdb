@@ -34,16 +34,18 @@ public class QueryPart {
     }
 
     public enum Command {
-        AND, AND_FIELD,
-        OR, OR_FIELD,
-        WHERE, WHERE_FIELD,
-        EQ, EQ_FIELD,
-        NEQ, NEQ_FIELD,
-        LIKE, LIKE_FIELD,
-        LT, LT_FIELD,
-        GT, GT_FIELD,
-        IN, IN_FIELD,
-        BETWEEN, BETWEEN_FIELD,
-        NOT, LIMIT
+        And, AndField,
+        Or, OrField,
+        Where, WhereField,
+        Eq, EqField,
+        Ne, NeField,
+        Lt, LtField,
+        Le, LeField,
+        Gt, GtField,
+        Ge, GeField,
+        Like, LikeField,
+        In, InField,
+        Between, BetweenField,
+        Not, Limit
     }
 }

@@ -1,12 +1,12 @@
 package org.casper.proxy;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.casper.database.CasperDatabase;
 import org.casper.exception.CasperQueryBuilderException;
 import org.casper.query.QueryBuilder;
 import org.casper.query.QueryPart;
 import org.casper.repository.CasperRepository;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
@@ -18,6 +18,20 @@ import java.lang.reflect.Method;
 public class CasperRepositoryFactory {
 
     private static CasperDatabase database = new CasperDatabase();
+
+    @SuppressWarnings("unchecked")
+    public static <T extends CasperRepository<?>> T getRepository(Class<T> iface) {
+        database.createCollection(iface.getSimpleName());
+
+        ProxyFactory pf = new ProxyFactory();
+        Advisor advisor = new DefaultPointcutAdvisor(new CasperRepositoryPointcut(), new CasperRepositoryInterceptor());
+
+        pf.addAdvisor(advisor);
+        pf.setInterfaces(iface);
+        pf.setTarget(iface);
+
+        return (T) pf.getProxy();
+    }
 
     private static class CasperRepositoryInterceptor implements MethodInterceptor {
 
@@ -65,7 +79,7 @@ public class CasperRepositoryFactory {
                 String field = "";
                 int partIndex = 0;
                 int index = 0;
-                QueryPart.Command command = QueryPart.Command.EQ_FIELD;
+                QueryPart.Command command = QueryPart.Command.EqField;
                 for (String p : parts) {
                     switch (p.toLowerCase()) {
                         case "not":
@@ -73,20 +87,20 @@ public class CasperRepositoryFactory {
                                 field += p;
                                 break;
                             }
-                            qb.add(QueryPart.Command.NOT);
+                            qb.add(QueryPart.Command.Not);
                             break;
                         case "like":
                             if (field.length() == 0) {
                                 field += p;
                                 break;
                             }
-                            command = QueryPart.Command.LIKE_FIELD;
+                            command = QueryPart.Command.LikeField;
                             break;
                         case "and":
                             if (partIndex > args.length)
                                 throw new CasperQueryBuilderException("Invalid number of arguments");
                             qb.add(command, formatFieldName(field), args[partIndex]);
-                            qb.add(QueryPart.Command.AND);
+                            qb.add(QueryPart.Command.And);
                             field = "";
                             ++partIndex;
                             break;
@@ -95,7 +109,7 @@ public class CasperRepositoryFactory {
                                 throw new CasperQueryBuilderException("Invalid number of arguments");
 
                             qb.add(command, formatFieldName(field), args[partIndex]);
-                            qb.add(QueryPart.Command.OR);
+                            qb.add(QueryPart.Command.Or);
                             field = "";
                             ++partIndex;
                             break;
@@ -103,7 +117,7 @@ public class CasperRepositoryFactory {
 
                             if (index < parts.length - 1) {
                                 field += p;
-                                command = QueryPart.Command.EQ_FIELD;
+                                command = QueryPart.Command.EqField;
                                 break;
                             }
 
@@ -118,11 +132,11 @@ public class CasperRepositoryFactory {
                             if (partIndex > args.length)
                                 throw new CasperQueryBuilderException("Invalid number of arguments");
 
-                            qb.add(QueryPart.Command.LIMIT, args[partIndex]);
+                            qb.add(QueryPart.Command.Limit, args[partIndex]);
                             ++partIndex;
                             break;
                         default:
-                            command = QueryPart.Command.EQ_FIELD;
+                            command = QueryPart.Command.EqField;
                             field += p;
 
                     }
@@ -164,19 +178,5 @@ public class CasperRepositoryFactory {
             }
         }
          */
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends CasperRepository<?>> T getRepository(Class<T> iface) {
-        database.createCollection(iface.getSimpleName());
-
-        ProxyFactory pf = new ProxyFactory();
-        Advisor advisor = new DefaultPointcutAdvisor(new CasperRepositoryPointcut(), new CasperRepositoryInterceptor());
-
-        pf.addAdvisor(advisor);
-        pf.setInterfaces(iface);
-        pf.setTarget(iface);
-
-        return (T) pf.getProxy();
     }
 }

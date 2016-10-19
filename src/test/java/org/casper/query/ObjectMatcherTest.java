@@ -63,9 +63,9 @@ public class ObjectMatcherTest {
 
     @Test
     public void neq() throws Exception {
-        matcher.neq("id", 2);
+        matcher.ne("id", 2);
         assertTrue(matcher.isMatch());
-        matcher.neq("id", 1);
+        matcher.ne("id", 1);
         assertFalse(matcher.isMatch());
     }
 
@@ -73,9 +73,9 @@ public class ObjectMatcherTest {
     public void neq1() throws Exception {
         matcher.where("id");
 
-        matcher.neq(2);
+        matcher.ne(2);
         assertTrue(matcher.isMatch());
-        matcher.neq(1);
+        matcher.ne(1);
         assertFalse(matcher.isMatch());
     }
 

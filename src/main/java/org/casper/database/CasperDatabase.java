@@ -86,22 +86,22 @@ public class CasperDatabase {
 
         for (QueryPart p : qb) {
             switch (p.getCommand()) {
-                case EQ_FIELD:
+                case EqField:
                     q.eq(p.getField(), p.getValue());
                     break;
-                case LIKE_FIELD:
+                case LikeField:
                     q.like(p.getField(), (String) p.getValue());
                     break;
-                case AND:
+                case And:
                     q.and();
                     break;
-                case OR:
+                case Or:
                     q.or();
                     break;
-                case NOT:
+                case Not:
                     q.not();
                     break;
-                case LIMIT:
+                case Limit:
                     q.limit((Integer) p.getValue());
             }
         }
@@ -110,7 +110,7 @@ public class CasperDatabase {
     }
 
     public <T> T findOne(QueryBuilder qb) throws CasperException {
-        qb.add(QueryPart.Command.LIMIT, 1);
+        qb.add(QueryPart.Command.Limit, 1);
         List<T> r = find(qb);
         return r.size() > 0 ? r.get(0) : null;
     }

@@ -81,13 +81,47 @@ public class ObjectMatcher<T> {
         return eq(this.field, value);
     }
 
-    public ObjectMatcher<T> neq(String field, Object value) throws CasperException {
+    public ObjectMatcher<T> ne(String field, Object value) throws CasperException {
         negate = true;
         return eq(field, value);
     }
 
+    public ObjectMatcher<T> ne(Object value) throws CasperException {
+        return ne(field, value);
+    }
+
+    @Deprecated
+    public ObjectMatcher<T> neq(String field, Object value) throws CasperException {
+        return ne(field, value);
+    }
+
+    @Deprecated
     public ObjectMatcher<T> neq(Object value) throws CasperException {
-        return neq(field, value);
+        return ne(value);
+    }
+
+    public ObjectMatcher<T> lg(String field, Number value) throws CasperException {
+        return ne(field, value);
+    }
+
+    public ObjectMatcher<T> lg(Number value) throws CasperException {
+        return ne(value);
+    }
+
+    public ObjectMatcher<T> lt(String field, Number value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.LessThan);
+    }
+
+    public ObjectMatcher<T> lt(Number value) throws CasperException {
+        return lt(field, value);
+    }
+
+    public ObjectMatcher<T> gt(String field, Number value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.GreaterThan);
+    }
+
+    public ObjectMatcher<T> gt(Number value) throws CasperException {
+        return gt(field, value);
     }
 
     public ObjectMatcher<T> like(String field, String value) throws CasperException {
@@ -115,23 +149,6 @@ public class ObjectMatcher<T> {
 
     public ObjectMatcher<T> like(String value) throws CasperException {
         return like(field, value);
-    }
-
-
-    public ObjectMatcher<T> lt(String field, Number value) throws CasperException {
-        return test(field, value, CasperUtils.Mode.LessThan);
-    }
-
-    public ObjectMatcher<T> lt(Number value) throws CasperException {
-        return lt(field, value);
-    }
-
-    public ObjectMatcher<T> gt(String field, Number value) throws CasperException {
-        return test(field, value, CasperUtils.Mode.GreaterThan);
-    }
-
-    public ObjectMatcher<T> gt(Number value) throws CasperException {
-        return gt(field, value);
     }
 
     public ObjectMatcher<T> in(String field, Object[] value) throws CasperException {

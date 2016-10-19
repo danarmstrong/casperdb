@@ -23,67 +23,105 @@ public class ListQuery<T extends Collection<?>> {
     }
 
     public ListQuery<T> eq(String field, Object value) {
-        query.add(QueryPart.Command.EQ_FIELD, field, value);
+        query.add(QueryPart.Command.EqField, field, value);
         return this;
     }
 
     public ListQuery<T> eq(Object value) {
-        query.add(QueryPart.Command.EQ, value);
+        query.add(QueryPart.Command.Eq, value);
         return this;
     }
 
+    public ListQuery<T> ne(String field, Object value) {
+        query.add(QueryPart.Command.NeField, field, value);
+        return this;
+    }
+
+    public ListQuery<T> ne(Object value) {
+        query.add(QueryPart.Command.Ne, value);
+        return this;
+    }
+
+    public ListQuery<T> lg(String field, Number value) {
+        return ne(field, value);
+    }
+
+    public ListQuery<T> lg(Number value) {
+        return ne(value);
+    }
+
+    @Deprecated
     public ListQuery<T> neq(String field, Object value) {
-        query.add(QueryPart.Command.NEQ_FIELD, field, value);
+        return ne(field, value);
+    }
+
+    @Deprecated
+    public ListQuery<T> neq(Object value) {
+        return ne(value);
+    }
+
+    public ListQuery<T> lt(String field, Number value) {
+        query.add(QueryPart.Command.LtField, field, value);
         return this;
     }
 
-    public ListQuery<T> neq(Object value) {
-        query.add(QueryPart.Command.NEQ, value);
+    public ListQuery<T> lt(Number value) {
+        query.add(QueryPart.Command.Lt, value);
+        return this;
+    }
+
+    public ListQuery<T> gt(String field, Number value) {
+        query.add(QueryPart.Command.GtField, field, value);
+        return this;
+    }
+
+    public ListQuery<T> gt(Number value) {
+        query.add(QueryPart.Command.Gt, value);
         return this;
     }
 
     public ListQuery<T> like(String field, String value) {
-        query.add(QueryPart.Command.LIKE_FIELD, field, value);
+        query.add(QueryPart.Command.LikeField, field, value);
         return this;
     }
 
     public ListQuery<T> like(String value) {
-        query.add(QueryPart.Command.LIKE, value);
+        query.add(QueryPart.Command.Like, value);
         return this;
     }
 
     public ListQuery<T> and() {
-        query.add(QueryPart.Command.AND);
+        query.add(QueryPart.Command.And);
         return this;
     }
 
     public ListQuery<T> and(String field) {
-        query.add(QueryPart.Command.AND_FIELD, field, null);
+        query.add(QueryPart.Command.AndField, field, null);
         return this;
     }
 
     public ListQuery<T> or() {
-        query.add(QueryPart.Command.OR);
+        query.add(QueryPart.Command.Or);
         return this;
     }
 
     public ListQuery<T> or(String field) {
-        query.add(QueryPart.Command.OR_FIELD, field, null);
+        query.add(QueryPart.Command.OrField, field, null);
         return this;
     }
 
     public ListQuery<T> not() {
-        query.add(QueryPart.Command.NOT);
+        query.add(QueryPart.Command.Not);
         return this;
     }
 
     public ListQuery<T> where() {
-        query.add(QueryPart.Command.WHERE);
+        query.add(QueryPart.Command.Where);
         return this;
     }
 
     public ListQuery<T> where(String field) {
-        query.add(QueryPart.Command.WHERE_FIELD, field, null);
+        query.add(QueryPart.Command.WhereField, field, null);
         return this;
     }
 
@@ -110,43 +148,81 @@ public class ListQuery<T extends Collection<?>> {
         ObjectMatcher<X> q = ObjectMatcher.match(x);
         for (QueryPart part : query) {
             switch (part.getCommand()) {
-                case AND:
+                case And:
                     q.and();
                     break;
-                case AND_FIELD:
+                case AndField:
                     q.and(part.getField());
                     break;
-                case OR:
+                case Or:
                     q.or();
                     break;
-                case OR_FIELD:
+                case OrField:
                     q.or(part.getField());
                     break;
-                case NOT:
+                case Not:
                     q.not();
                     break;
-                case WHERE:
+                case Where:
                     q.where();
                     break;
-                case WHERE_FIELD:
+                case WhereField:
                     q.where(part.getField());
                     break;
-                case EQ:
+                case Eq:
                     q.eq(part.getValue());
                     break;
-                case EQ_FIELD:
+                case EqField:
                     q.eq(part.getField(), part.getValue());
                     break;
-                case NEQ:
-                    q.neq(part.getValue());
+                case Ne:
+                    q.ne(part.getValue());
                     break;
-                case NEQ_FIELD:
+                case NeField:
                     q.eq(part.getField(), part.getValue());
                     break;
-                case LIKE:
+                case Lt:
+                    q.lt((Number) part.getValue());
+                    break;
+                case LtField:
+                    q.lt(part.getField(), (Number) part.getValue());
+                    break;
+                case Gt:
+                    q.gt((Number) part.getValue());
+                    break;
+                case GtField:
+                    q.gt(part.getField(), (Number) part.getValue());
+                    break;
+                case Ge:
+                    // TODO add GE
+                    break;
+                case GeField:
+                    // TODO add GE_FIELD
+                    break;
+                case Le:
+                    // TODO add LE
+                    break;
+                case LeField:
+                    // TODO add LE_FIELD
+                    break;
+                case In:
+                    //TODO what about arrays?
+                    q.in((List<T>) part.getValue());
+                    break;
+                case InField:
+                    //TODO what about arrays?
+                    q.in(part.getField(), (List<T>) part.getValue());
+                    break;
+                case Between:
+                    // TODO handle start and end?
+                    break;
+                case BetweenField:
+                    // TODO handle start and end?
+                    break;
+                case Like:
                     q.like((String) part.getValue());
                     break;
-                case LIKE_FIELD:
+                case LikeField:
                     q.like(part.getField(), (String) part.getValue());
                     break;
             }
@@ -163,43 +239,43 @@ public class ListQuery<T extends Collection<?>> {
 
         for (QueryPart part : query) {
             switch (part.getCommand()) {
-                case AND:
+                case And:
                     sb.append(" and  ");
                     break;
-                case AND_FIELD:
+                case AndField:
                     sb.append(" and ").append(part.getField());
                     break;
-                case OR:
+                case Or:
                     sb.append(" or ");
                     break;
-                case OR_FIELD:
+                case OrField:
                     sb.append(" or ").append(part.getField());
                     break;
-                case NOT:
+                case Not:
                     sb.append("!");
                     break;
-                case WHERE:
+                case Where:
                     sb.append("");
                     break;
-                case WHERE_FIELD:
+                case WhereField:
                     sb.append(part.getField());
                     break;
-                case EQ:
+                case Eq:
                     sb.append(" = ").append(part.getValue());
                     break;
-                case EQ_FIELD:
+                case EqField:
                     sb.append(part.getField()).append(" = ").append(part.getValue());
                     break;
-                case NEQ:
+                case Ne:
                     sb.append(" != ").append(part.getValue());
                     break;
-                case NEQ_FIELD:
+                case NeField:
                     sb.append(part.getField()).append(" != ").append(part.getValue());
                     break;
-                case LIKE:
+                case Like:
                     sb.append(" like ").append(part.getValue());
                     break;
-                case LIKE_FIELD:
+                case LikeField:
                     sb.append(part.getField()).append(" like ").append(part.getValue());
                     break;
             }
