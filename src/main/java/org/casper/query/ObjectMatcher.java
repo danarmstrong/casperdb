@@ -22,8 +22,13 @@ public class ObjectMatcher<T> {
         sourceClass = this.source.getClass();
     }
 
-    public static <T> ObjectMatcher<T> from(T t) {
+    public static <T> ObjectMatcher<T> match(T t) {
         return new ObjectMatcher<T>(t);
+    }
+
+    @Deprecated
+    public static <T> ObjectMatcher<T> from(T t) {
+        return match(t);
     }
 
     public T getSource() {

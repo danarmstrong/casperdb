@@ -107,7 +107,7 @@ public class ListQuery<T extends Collection<?>> {
     }
 
     private <X> ObjectMatcher<X> buildQuery(X x) throws CasperException {
-        ObjectMatcher<X> q = ObjectMatcher.from(x);
+        ObjectMatcher<X> q = ObjectMatcher.match(x);
         for (QueryPart part : query) {
             switch (part.getCommand()) {
                 case AND:
