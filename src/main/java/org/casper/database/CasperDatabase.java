@@ -5,6 +5,7 @@ import org.casper.query.ListQuery;
 import org.casper.query.QueryBuilder;
 import org.casper.query.QueryPart;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +42,32 @@ public class CasperDatabase {
         return t;
     }
 
+    public <T> List<T> remove(String repository, List<T> t) {
+        CasperCollection<T> records = (CasperCollection<T>) database.get(repository);
+        for (T e : t) {
+            for (T c : records) {
+                if (e.equals(c))
+                    records.remove(c);
+            }
+        }
+
+        return t;
+    }
+
+    public <T> List<T> remove(String repository, T[] t) {
+        return remove(repository, Arrays.asList(t));
+    }
+
     public <T> T delete(String repository, T t) {
         return remove(repository, t);
+    }
+
+    public <T> List<T> delete(String repository, List<T> t) {
+        return remove(repository, t);
+    }
+
+    public <T> List<T> delete(String repository, T[] t) {
+        return remove(repository, Arrays.asList(t));
     }
 
     @SuppressWarnings("unchecked")

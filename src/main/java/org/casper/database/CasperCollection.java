@@ -40,6 +40,15 @@ public class CasperCollection<T> implements Iterable<T> {
         return records.size();
     }
 
+    public void sort() {
+        Collections.sort(records, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return 0;
+            }
+        });
+    }
+
     @Override
     public Iterator<T> iterator() {
         return records.iterator();
