@@ -17,11 +17,11 @@ public class ObjectMatcherTest {
     @Before
     public void setUp() throws Exception {
         testObject = new TestObject(1, "John", 30, "Fighting clowns 100% of the time", 'm', 'a');
-        matcher = ObjectMatcher.from(testObject);
+        matcher = ObjectMatcher.match(testObject);
     }
 
     @Test
-    public void from() throws Exception {
+    public void match() throws Exception {
         assertNotNull(matcher.getSource());
     }
 

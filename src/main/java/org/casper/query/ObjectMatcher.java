@@ -12,7 +12,7 @@ import java.util.List;
  * -- ex: Matching an object using preferred syntax
  * <pre>
  * {@code
- *      if (ObjectMatcher.match(o).where("name").eq("Bob").and("age").not().eq(25).isMatch())
+ *      if (ObjectMatcher.result(o).where("name").eq("Bob").and("age").not().eq(25).isMatch())
  *          // Do something based on matching object
  * }
  * </pre>
@@ -20,7 +20,7 @@ import java.util.List;
  * -- ex: Matching an object using alternative syntax
  * <pre>
  * {@code
- *      if (ObjectMatcher.match(o).eq("name", "Bob").and().ne("age", 25).isMatch())
+ *      if (ObjectMatcher.result(o).eq("name", "Bob").and().ne("age", 25).isMatch())
  *          // Do something based on matching object
  * }
  * </pre>
@@ -28,7 +28,7 @@ import java.util.List;
  * -- ex: Building an ObjectMatcher
  * <pre>
  * {@code
- *      ObjectMatcher<MyObject> om = ObjectMatcher.match(o);
+ *      ObjectMatcher<MyObject> om = ObjectMatcher.result(o);
  *      o.where("name").eq("Bob");
  *      o.and("age").not().eq(25);
  *
@@ -42,7 +42,7 @@ import java.util.List;
  * @param <T>
  */
 public class ObjectMatcher<T> {
-    private boolean match;
+    private boolean result;
     private boolean skipNext;
     private boolean negate;
     private T source;
@@ -50,17 +50,35 @@ public class ObjectMatcher<T> {
     private String field;
 
     private ObjectMatcher(T source) {
-        match = false;
+        result = false;
         skipNext = false;
         negate = false;
         this.source = source;
         sourceClass = this.source.getClass();
     }
 
+    /**
+     * Sets the source object
+     *
+     * @param t   the source object
+     * @param <T>
+     * @return new instance of ObjectMatcher with source object set
+     * @since 1.2
+     */
     public static <T> ObjectMatcher<T> match(T t) {
         return new ObjectMatcher<T>(t);
     }
 
+
+    /**
+     * Sets the source object
+     *
+     * @param t   the source object
+     * @param <T>
+     * @return new instance of ObjectMatcher with source object set
+     * @since 1.0
+     * @deprecated 1.2 see {@link #match}
+     */
     @Deprecated
     public static <T> ObjectMatcher<T> from(T t) {
         return match(t);
@@ -79,7 +97,7 @@ public class ObjectMatcher<T> {
     }
 
     public boolean isMatch() {
-        return match;
+        return result;
     }
 
     private ObjectMatcher<T> test(String field, Object value, CasperUtils.Mode mode)
@@ -93,15 +111,15 @@ public class ObjectMatcher<T> {
         int result = CasperUtils.compare(source, field, value, mode);
 
         if (mode == CasperUtils.Mode.LessThan) {
-            this.match = negate != (result < 0);
+            this.result = negate != (result < 0);
         } else if (mode == CasperUtils.Mode.GreaterThan) {
-            this.match = negate != (result > 0);
+            this.result = negate != (result > 0);
         } else if (mode == CasperUtils.Mode.LessThanEqual) {
-            this.match = negate != (result <= 0);
+            this.result = negate != (result <= 0);
         } else if (mode == CasperUtils.Mode.GreaterThanEqual) {
-            this.match = negate != (result >= 0);
+            this.result = negate != (result >= 0);
         } else {
-            this.match = negate != (result == 0);
+            this.result = negate != (result == 0);
         }
 
         negate = false;
@@ -223,13 +241,13 @@ public class ObjectMatcher<T> {
 
         for (Double i = s; i <= e; ++i) {
             if (CasperUtils.compare(source, field, i, CasperUtils.Mode.Between) == 0) {
-                this.match = !negate;
+                result = !negate;
                 negate = false;
                 return this;
             }
         }
 
-        this.match = negate;
+        result = negate;
         negate = false;
         return this;
     }
@@ -238,18 +256,68 @@ public class ObjectMatcher<T> {
         return between(field, start, end);
     }
 
+    /**
+     * Tests whether the value of the specified field is null
+     *
+     * @param field the name of the field in the source object to check
+     * @return the current instance of the ObjectMatcher with statuses set
+     * @throws CasperException
+     * @since 1.2
+     */
+    public ObjectMatcher<T> isNull(String field) throws CasperException {
+        if (skipNext) {
+            skipNext = false;
+            negate = false;
+            return this;
+        }
+
+        Object o = CasperUtils.getFieldValue(source, field);
+        result = negate != (o == null);
+        negate = false;
+        return this;
+    }
+
+    public ObjectMatcher<T> isNull() throws CasperException {
+        return isNull(field);
+    }
+
+    /**
+     * Tests whether the value of the specified field is not null
+     *
+     * @param field the name of the field in the source object to check
+     * @return the current instance of the ObjectMatcher with statuses set
+     * @throws CasperException
+     * @since 1.2
+     */
+    public ObjectMatcher<T> isNotNull(String field) throws CasperException {
+        if (skipNext) {
+            skipNext = false;
+            negate = false;
+            return this;
+        }
+
+        Object o = CasperUtils.getFieldValue(source, field);
+        result = negate != (o != null);
+        negate = false;
+        return this;
+    }
+
+    public ObjectMatcher<T> isNotNull() throws CasperException {
+        return isNotNull(field);
+    }
+
     public ObjectMatcher<T> not() {
         negate = true;
         return this;
     }
 
     public ObjectMatcher<T> and() {
-        skipNext = !match;
+        skipNext = !result;
         return this;
     }
 
     public ObjectMatcher<T> or() {
-        skipNext = match;
+        skipNext = result;
         return this;
     }
 
@@ -270,5 +338,13 @@ public class ObjectMatcher<T> {
     public ObjectMatcher<T> or(String field) {
         this.field = field;
         return or();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        // ObjectMatcher.match(t).equals(o);
+        // TODO compare types
+        // TODO compare all fields
+        return false;
     }
 }
