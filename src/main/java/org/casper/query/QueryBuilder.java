@@ -32,6 +32,10 @@ public class QueryBuilder implements Iterable<QueryPart> {
         return parts;
     }
 
+    public void reset() {
+        parts.clear();
+    }
+
     public void add(QueryPart.Command command, String field, Object value) {
         parts.add(new QueryPart(command, field, value));
     }
@@ -44,12 +48,12 @@ public class QueryBuilder implements Iterable<QueryPart> {
         parts.add(new QueryPart(command));
     }
 
-    public enum Type {
-        FIND, REMOVE
-    }
-
     @Override
     public Iterator<QueryPart> iterator() {
         return Collections.unmodifiableList(parts).iterator();
+    }
+
+    public enum Type {
+        FIND, REMOVE
     }
 }

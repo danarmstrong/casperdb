@@ -43,6 +43,7 @@ public class QueryPart {
         Le, LeField,
         Gt, GtField,
         Ge, GeField,
+        Lg, LgField,
         Like, LikeField,
         In, InField,
         Between, BetweenField,

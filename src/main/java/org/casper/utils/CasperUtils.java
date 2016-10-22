@@ -7,6 +7,12 @@ import java.lang.reflect.Field;
 
 public class CasperUtils {
     public static <T> int compare(T t, String field, Object value, Mode mode) throws CasperException {
+        if (t == null)
+            throw new CasperException("Input object is null");
+
+        if (field == null)
+            throw new CasperException("Field is null");
+
         Object o = getFieldValue(t, field);
 
         if (!o.getClass().equals(value.getClass())

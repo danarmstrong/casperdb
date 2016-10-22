@@ -3,7 +3,7 @@ package org.casper.query;
 import org.casper.exception.CasperException;
 import org.casper.utils.CasperUtils;
 
-import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -177,6 +177,22 @@ public class ObjectMatcher<T> {
         return gt(field, value);
     }
 
+    public ObjectMatcher<T> le(String field, Number value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.LessThanEqual);
+    }
+
+    public ObjectMatcher<T> le(Number value) throws CasperException {
+        return le(field, value);
+    }
+
+    public ObjectMatcher<T> ge(String field, Number value) throws CasperException {
+        return test(field, value, CasperUtils.Mode.GreaterThanEqual);
+    }
+
+    public ObjectMatcher<T> ge(Number value) throws CasperException {
+        return ge(field, value);
+    }
+
     public ObjectMatcher<T> like(String field, String value) throws CasperException {
 
         value = value.replace("\\%", "$$__PERCENT__$$");
@@ -212,11 +228,11 @@ public class ObjectMatcher<T> {
         return in(field, value);
     }
 
-    public ObjectMatcher<T> in(String field, List<?> value) throws CasperException {
+    public ObjectMatcher<T> in(String field, Collection<?> value) throws CasperException {
         return in(field, value.toArray());
     }
 
-    public ObjectMatcher<T> in(List<?> value) throws CasperException {
+    public ObjectMatcher<T> in(Collection<?> value) throws CasperException {
         return in(field, value);
     }
 
@@ -342,7 +358,7 @@ public class ObjectMatcher<T> {
 
     @Override
     public boolean equals(Object o) {
-        // ObjectMatcher.match(t).equals(o);
+        // ObjectMatcher.match(t).equals(o);q
         // TODO compare types
         // TODO compare all fields
         return false;

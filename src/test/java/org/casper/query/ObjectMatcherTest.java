@@ -1,5 +1,6 @@
 package org.casper.query;
 
+import org.casper.exception.CasperException;
 import org.casper.model.TestObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +46,13 @@ public class ObjectMatcherTest {
 
     @Test
     public void eq() throws Exception {
+
+        try {
+            matcher.eq(1);
+        } catch (CasperException ex) {
+            assertEquals(ex.getMessage(), "Field is null");
+        }
+
         matcher.eq("id", 1);
         assertTrue(matcher.isMatch());
         matcher.eq("id", 2);

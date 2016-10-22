@@ -22,6 +22,11 @@ public class ListQuery<T extends Collection<?>> {
         return new ListQuery<T>(source);
     }
 
+    public ListQuery<T> reset() {
+        query.reset();
+        return this;
+    }
+
     public ListQuery<T> eq(String field, Object value) {
         query.add(QueryPart.Command.EqField, field, value);
         return this;
@@ -77,6 +82,46 @@ public class ListQuery<T extends Collection<?>> {
 
     public ListQuery<T> gt(Number value) {
         query.add(QueryPart.Command.Gt, value);
+        return this;
+    }
+
+    public ListQuery<T> le(String field, Number value) {
+        query.add(QueryPart.Command.LeField, field, value);
+        return this;
+    }
+
+    public ListQuery<T> le(Number value) {
+        query.add(QueryPart.Command.Le, value);
+        return this;
+    }
+
+    public ListQuery<T> ge(String field, Number value) {
+        query.add(QueryPart.Command.GeField, field, value);
+        return this;
+    }
+
+    public ListQuery<T> ge(Number value) {
+        query.add(QueryPart.Command.Ge, value);
+        return this;
+    }
+
+    public ListQuery<T> in(String field, Collection<?> value) {
+        query.add(QueryPart.Command.InField, field, value);
+        return this;
+    }
+
+    public ListQuery<T> in(Collection<?> value) {
+        query.add(QueryPart.Command.In, value);
+        return this;
+    }
+
+    public ListQuery<T> in(String field, Object[] value) {
+        query.add(QueryPart.Command.InField, field, value);
+        return this;
+    }
+
+    public ListQuery<T> in(Object[] value) {
+        query.add(QueryPart.Command.In, value);
         return this;
     }
 
@@ -141,6 +186,8 @@ public class ListQuery<T extends Collection<?>> {
                     break;
             }
         }
+
+        query.reset();
         return results;
     }
 
@@ -194,24 +241,38 @@ public class ListQuery<T extends Collection<?>> {
                     q.gt(part.getField(), (Number) part.getValue());
                     break;
                 case Ge:
-                    // TODO add GE
+                    q.ge((Number) part.getValue());
                     break;
                 case GeField:
-                    // TODO add GE_FIELD
+                    q.ge(part.getField(), (Number) part.getValue());
                     break;
                 case Le:
-                    // TODO add LE
+                    q.le((Number) part.getValue());
                     break;
                 case LeField:
-                    // TODO add LE_FIELD
+                    q.le(part.getField(), (Number) part.getValue());
+                    break;
+                case Lg:
+                    q.lg((Number) part.getValue());
+                    break;
+                case LgField:
+                    q.lg(part.getField(), (Number) part.getValue());
                     break;
                 case In:
-                    //TODO what about arrays?
-                    q.in((List<T>) part.getValue());
+                    if (part.getValue().getClass().isArray())
+                        q.in((T[]) part.getValue());
+                    else if (part.getValue() instanceof Collection<?>)
+                        q.in((List<T>) part.getValue());
+                    else
+                        throw new CasperException("Invalid input for IN clause");
                     break;
                 case InField:
-                    //TODO what about arrays?
-                    q.in(part.getField(), (List<T>) part.getValue());
+                    if (part.getValue().getClass().isArray())
+                        q.in(part.getField(), (T[]) part.getValue());
+                    else if (part.getValue() instanceof Collection<?>)
+                        q.in(part.getField(), (List<T>) part.getValue());
+                    else
+                        throw new CasperException("Invalid input for IN clause");
                     break;
                 case Between:
                     // TODO handle start and end?
@@ -268,6 +329,36 @@ public class ListQuery<T extends Collection<?>> {
                     break;
                 case Ne:
                     sb.append(" != ").append(part.getValue());
+                    break;
+                case Lt:
+                    sb.append(" < ").append(part.getValue());
+                    break;
+                case LtField:
+                    sb.append(part.getField()).append(" < ").append(part.getValue());
+                    break;
+                case Gt:
+                    sb.append(" > ").append(part.getValue());
+                    break;
+                case GtField:
+                    sb.append(part.getField()).append(" > ").append(part.getValue());
+                    break;
+                case Le:
+                    sb.append(" <= ").append(part.getValue());
+                    break;
+                case LeField:
+                    sb.append(part.getField()).append(" <= ").append(part.getValue());
+                    break;
+                case Ge:
+                    sb.append(" >= ").append(part.getValue());
+                    break;
+                case GeField:
+                    sb.append(part.getField()).append(" >= ").append(part.getValue());
+                    break;
+                case Lg:
+                    sb.append(" <> ").append(part.getValue());
+                    break;
+                case LgField:
+                    sb.append(part.getField()).append(" <> ").append(part.getValue());
                     break;
                 case NeField:
                     sb.append(part.getField()).append(" != ").append(part.getValue());
