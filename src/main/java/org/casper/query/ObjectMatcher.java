@@ -334,9 +334,9 @@ public class ObjectMatcher<T> {
                 } else if (value == Is.False) {
                     result = negate != (s.length() == 0);
                 }
+            } else {
+                throw new CasperException("Invalid type for IS comparison");
             }
-
-            // TODO more types!
         }
 
         negate = false;
