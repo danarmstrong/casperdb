@@ -66,7 +66,7 @@ public class ObjectMatcher<T> {
      * @since 1.2
      */
     public static <T> ObjectMatcher<T> match(T t) {
-        return new ObjectMatcher<T>(t);
+        return new ObjectMatcher<>(t);
     }
 
 
@@ -220,6 +220,15 @@ public class ObjectMatcher<T> {
         return like(field, value);
     }
 
+    /**
+     * Tests whether the value of the specified field is in a group of values
+     *
+     * @param field the name of the field in the source object to check
+     * @param value an array of values to search
+     * @return the current instance of the ObjectMatcher with statuses set
+     * @throws CasperException
+     * @since 1.2
+     */
     public ObjectMatcher<T> in(String field, Object[] value) throws CasperException {
         return test(field, value, CasperUtils.Mode.In);
     }
@@ -236,6 +245,17 @@ public class ObjectMatcher<T> {
         return in(field, value);
     }
 
+    /**
+     * Tests whether the value of the specified field is between a specific
+     * range of numbers
+     *
+     * @param field the name of the field in the source object to check
+     * @param start the minimum number
+     * @param end   the maximum number
+     * @return the current instance of the ObjectMatcher with statuses set
+     * @throws CasperException
+     * @since 1.2
+     */
     public ObjectMatcher<T> between(String field, Number start, Number end) throws CasperException {
         if (skipNext) {
             skipNext = false;
@@ -273,6 +293,80 @@ public class ObjectMatcher<T> {
     }
 
     /**
+     * Tests whether the value of the specified field is True, False or Unknown
+     * this method was inspired by the MySQL IS comparison
+     *
+     * @param field the name of the field in the source object to check
+     * @param value True (truthy) False (falsy) or Unknown (null)
+     * @return the current instance of the ObjectMatcher with statuses set
+     * @throws CasperException
+     * @since 1.2
+     */
+    public ObjectMatcher<T> is(String field, Is value) throws CasperException {
+        if (skipNext) {
+            skipNext = false;
+            negate = false;
+            return this;
+        }
+
+        Object fieldValue = CasperUtils.getFieldValue(source, field);
+
+        if (fieldValue == null && value == Is.Unknown) {
+            result = !negate;
+        } else {
+            if (fieldValue instanceof Boolean) {
+                if (value == Is.True) {
+                    result = negate != ((Boolean) fieldValue);
+                } else if (value == Is.False) {
+                    result = negate != (!((Boolean) fieldValue));
+                }
+            } else if (fieldValue instanceof Number) {
+                Double d = ((Number) fieldValue).doubleValue();
+                if (value == Is.True) {
+                    result = negate != (d > 0);
+                } else if (value == Is.False) {
+                    result = negate != (d <= 0);
+                }
+            } else if (fieldValue instanceof String) {
+                String s = ((String) fieldValue).trim();
+                if (value == Is.True) {
+                    result = negate != (s.length() > 0);
+                } else if (value == Is.False) {
+                    result = negate != (s.length() == 0);
+                }
+            }
+
+            // TODO more types!
+        }
+
+        negate = false;
+        return this;
+    }
+
+    public ObjectMatcher<T> is(Is value) throws CasperException {
+        return is(field, value);
+    }
+
+    /**
+     * Tests whether the value of the specified field is not True, False or Unknown
+     * this method was inspired by the MySQL IS NOT comparison
+     *
+     * @param field the name of the field in the source object to check
+     * @param value True (truthy) False (falsy) or Unknown (null)
+     * @return the current instance of the ObjectMatcher with statuses set
+     * @throws CasperException
+     * @since 1.2
+     */
+    public ObjectMatcher<T> isNot(String field, Is value) throws CasperException {
+        negate = true;
+        return is(field, value);
+    }
+
+    public ObjectMatcher<T> isNot(Is value) throws CasperException {
+        return isNot(field, value);
+    }
+
+    /**
      * Tests whether the value of the specified field is null
      *
      * @param field the name of the field in the source object to check
@@ -306,16 +400,8 @@ public class ObjectMatcher<T> {
      * @since 1.2
      */
     public ObjectMatcher<T> isNotNull(String field) throws CasperException {
-        if (skipNext) {
-            skipNext = false;
-            negate = false;
-            return this;
-        }
-
-        Object o = CasperUtils.getFieldValue(source, field);
-        result = negate != (o != null);
-        negate = false;
-        return this;
+        negate = true;
+        return isNull(field);
     }
 
     public ObjectMatcher<T> isNotNull() throws CasperException {
@@ -362,5 +448,9 @@ public class ObjectMatcher<T> {
         // TODO compare types
         // TODO compare all fields
         return false;
+    }
+
+    public enum Is {
+        True, False, Unknown
     }
 }

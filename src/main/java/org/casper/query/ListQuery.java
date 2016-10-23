@@ -19,7 +19,7 @@ public class ListQuery<T extends Collection<?>> {
     }
 
     public static <T extends Collection<?>> ListQuery<T> from(T source) {
-        return new ListQuery<T>(source);
+        return new ListQuery<>(source);
     }
 
     public ListQuery<T> reset() {
