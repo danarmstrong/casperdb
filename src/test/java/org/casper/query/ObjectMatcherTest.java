@@ -117,12 +117,13 @@ public class ObjectMatcherTest {
         assertTrue(matcher.isMatch());
         matcher.like("%John%");
         assertTrue(matcher.isMatch());
-        matcher.like("%\\%%");
-        assertTrue(matcher.isMatch());
         matcher.like("John");
         assertTrue(matcher.isMatch());
         matcher.like("Fish");
         assertFalse(matcher.isMatch());
+        matcher.where("job");
+        matcher.like("%\\%%");
+        assertTrue(matcher.isMatch());
     }
 
     @Test
